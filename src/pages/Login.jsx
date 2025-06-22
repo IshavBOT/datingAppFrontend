@@ -32,9 +32,17 @@ export default function Login() {
         return;
       }
 
-      // Store email for later use (for dashboard/profile fetching etc.)
       localStorage.setItem("email", email);
-
+      // Fetch userId and store in localStorage
+      try {
+        const profileRes = await fetch(`http://localhost:5000/api/profile/get?email=${email}`);
+        const profileData = await profileRes.json();
+        if (profileData && profileData._id) {
+          localStorage.setItem("userId", profileData._id);
+        }
+      } catch (e) {
+        console.error("Failed to fetch userId after login", e);
+      }
       alert("Login successful!");
       navigate("/dashboard");
     } catch (err) {
@@ -48,31 +56,57 @@ export default function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>Login</h2>
+        <div style={styles.logoContainer}>
+          <h1 style={styles.logo}>Campus Connect</h1>
+          <p style={styles.tagline}>Connect with your college community</p>
+        </div>
+        
+        <div style={styles.formContainer}>
+          <h2 style={styles.title}>Welcome Back</h2>
+          
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Email</label>
+            <input
+              style={styles.input}
+              type="email"
+              placeholder="Enter your college email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <input
-          style={styles.input}
-          type="email"
-          placeholder="College Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Password</label>
+            <input
+              style={styles.input}
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-        <input
-          style={styles.input}
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <button
+            style={styles.button}
+            onClick={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <span style={styles.loadingText}>
+                <span style={styles.loadingDots}>...</span>
+              </span>
+            ) : (
+              "Sign In"
+            )}
+          </button>
 
-        <button
-          style={styles.button}
-          onClick={handleLogin}
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+          <p style={styles.signupText}>
+            Don't have an account?{" "}
+            <a href="/signup" style={styles.signupLink}>
+              Sign up
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -81,43 +115,94 @@ export default function Login() {
 const styles = {
   container: {
     minHeight: "100vh",
-    background: "linear-gradient(to right, #a8edea, #fed6e3)",
+    background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    padding: "1rem",
   },
   card: {
-    background: "#fff",
-    padding: "2rem",
-    borderRadius: "12px",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+    background: "white",
+    borderRadius: "16px",
+    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
     width: "100%",
-    maxWidth: "400px",
+    maxWidth: "420px",
+    overflow: "hidden",
+  },
+  logoContainer: {
+    background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+    padding: "2rem",
     textAlign: "center",
+    color: "white",
+  },
+  logo: {
+    margin: 0,
+    fontSize: "2rem",
+    fontWeight: "700",
+    letterSpacing: "-0.5px",
+  },
+  tagline: {
+    margin: "0.5rem 0 0",
+    opacity: 0.9,
+    fontSize: "1rem",
+  },
+  formContainer: {
+    padding: "2rem",
   },
   title: {
-    marginBottom: "1.5rem",
-    fontSize: "24px",
+    margin: "0 0 1.5rem",
+    fontSize: "1.5rem",
     fontWeight: "600",
-    color: "#333",
+    color: "#1e293b",
+  },
+  inputGroup: {
+    marginBottom: "1.25rem",
+  },
+  label: {
+    display: "block",
+    marginBottom: "0.5rem",
+    fontSize: "0.875rem",
+    fontWeight: "500",
+    color: "#4b5563",
   },
   input: {
     width: "100%",
-    padding: "0.75rem",
-    marginBottom: "1rem",
+    padding: "0.75rem 1rem",
     borderRadius: "8px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
+    border: "1px solid #e2e8f0",
+    fontSize: "1rem",
+    transition: "all 0.2s ease",
   },
   button: {
     width: "100%",
-    padding: "0.75rem",
-    backgroundColor: "#4caf50",
-    color: "#fff",
-    fontSize: "16px",
-    fontWeight: "600",
+    padding: "0.875rem",
+    background: "#4f46e5",
+    color: "white",
     border: "none",
     borderRadius: "8px",
+    fontSize: "1rem",
+    fontWeight: "600",
     cursor: "pointer",
+    transition: "all 0.2s ease",
+    marginTop: "1rem",
+  },
+  loadingText: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingDots: {
+    animation: "loading 1.5s infinite",
+  },
+  signupText: {
+    marginTop: "1.5rem",
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: "0.875rem",
+  },
+  signupLink: {
+    color: "#4f46e5",
+    fontWeight: "600",
+    textDecoration: "none",
   },
 };

@@ -44,6 +44,15 @@ export default function CompleteProfile() {
       });
 
       alert("Profile completed!");
+      // Fetch userId and store in localStorage
+      try {
+        const profileRes = await axios.get(`http://localhost:5000/api/profile/get?email=${email}`);
+        if (profileRes.data && profileRes.data._id) {
+          localStorage.setItem("userId", profileRes.data._id);
+        }
+      } catch (e) {
+        console.error("Failed to fetch userId after profile completion", e);
+      }
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
