@@ -23,6 +23,11 @@ export default function Dashboard() {
         const res = await fetch(`http://localhost:5000/api/profile/get?email=${email}`);
         const data = await res.json();
         setProfile(data);
+        
+        // Store userId in localStorage for SwipeCard component
+        if (data && data._id) {
+          localStorage.setItem("userId", data._id);
+        }
       } catch (err) {
         console.error(err);
         alert("Failed to load profile.");

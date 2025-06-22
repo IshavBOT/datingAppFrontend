@@ -130,3 +130,16 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text);
 }
+
+/* Loading spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Loading dots animation */
+@keyframes loading {
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}

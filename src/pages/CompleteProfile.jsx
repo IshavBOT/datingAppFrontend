@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function CompleteProfile() {
+  const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [gender, setGender] = useState("");
   const [year, setYear] = useState("");
@@ -15,7 +16,7 @@ export default function CompleteProfile() {
   const handleSubmit = async () => {
     const email = localStorage.getItem("email");
 
-    if (!bio || !gender || !year || !branch || !photo || !email) {
+    if (!name || !bio || !gender || !year || !branch || !photo || !email) {
       alert("Please fill all fields");
       return;
     }
@@ -35,6 +36,7 @@ export default function CompleteProfile() {
       const photoURL = cloudRes.data.secure_url;
 
       await axios.post("http://localhost:5000/api/profile/complete", {
+        name,
         bio,
         gender,
         year,
@@ -65,6 +67,13 @@ export default function CompleteProfile() {
     <div style={styles.container}>
       <div style={styles.card}>
         <h2 style={styles.title}>Complete Your Profile</h2>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={styles.input}
+        />
         <textarea
           placeholder="Bio"
           value={bio}

@@ -5,13 +5,12 @@ import { getStorage } from "firebase/storage";
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAc3JiA3UIS2uPEFjEVy5TR7H57NsCSpek",
-  // authDomain: "jogisuperstore.firebaseapp.com",
-  projectId: "jogisuperstore",
-  storageBucket: "jogisuperstore.firebasestorage.app",
-  messagingSenderId: "138604450315",
-  appId: "1:138604450315:web:2f9f67c79563520f066d0e",
-  measurementId: "G-Z88FP52ZD4"
+  apiKey: "AIzaSyBBlm_A8JDlV2XTmxvu773SVIdUDSEGogs",
+  authDomain: "server-eceec.firebaseapp.com",
+  projectId: "server-eceec",
+  storageBucket: "server-eceec.firebasestorage.app",
+  messagingSenderId: "491866630406",
+  appId: "1:491866630406:web:50c058c4be455323859687"
 };
 
 

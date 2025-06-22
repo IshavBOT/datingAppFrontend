@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function EditProfile() {
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({
+    name: "",
     bio: "",
     gender: "",
     year: "",
@@ -24,6 +25,7 @@ export default function EditProfile() {
         const data = await res.json();
         setProfile(data);
         setFormData({
+          name: data.name || "",
           bio: data.bio || "",
           gender: data.gender || "",
           year: data.year || "",
@@ -70,6 +72,7 @@ export default function EditProfile() {
     <div style={{ padding: "2rem", maxWidth: "600px", margin: "0 auto" }}>
       <h2>Edit Your Profile</h2>
       <form onSubmit={handleSubmit}>
+        <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" required />
         <input name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" required />
         <input name="gender" value={formData.gender} onChange={handleChange} placeholder="Gender" required />
         <input name="year" value={formData.year} onChange={handleChange} placeholder="Year" required />
