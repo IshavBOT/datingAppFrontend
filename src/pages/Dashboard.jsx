@@ -1,15 +1,25 @@
 // Dashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SwipeCard from "../pages/SwipeCard"; // Adjust path
 import BlockedUsersModal from "../components/BlockedUsersModal";
-import { FaUserEdit, FaSignOutAlt, FaComments, FaVenusMars, FaGraduationCap, FaEnvelope, FaHeart, FaRegCommentDots, FaCalendarAlt, FaBan } from "react-icons/fa";
+import SwipeFilters from "../components/SwipeFilters";
+import { FaUserEdit, FaSignOutAlt, FaComments, FaVenusMars, FaGraduationCap, FaEnvelope, FaHeart, FaRegCommentDots, FaCalendarAlt, FaBan, FaCog, FaFilter, FaCommentDots } from "react-icons/fa";
 
 export default function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showBlockedUsers, setShowBlockedUsers] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    branch: '',
+    year: '',
+    gender: '',
+    tags: []
+  });
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -35,6 +45,22 @@ export default function Dashboard() {
     fetchProfile();
   }, [navigate]);
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
@@ -42,6 +68,12 @@ export default function Dashboard() {
 
   const handleEditProfile = () => navigate("/edit-profile");
   const goToChats = () => navigate("/chats");
+
+  const handleFiltersChange = (newFilters) => {
+    setActiveFilters(newFilters);
+    setFiltersOpen(false); // Close modal after applying filters
+    // You can add logic here to pass filters to SwipeCard if needed
+  };
 
   if (loading) {
     return (
@@ -55,36 +87,37 @@ export default function Dashboard() {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-white py-8">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-center max-w-5xl mx-auto mb-10 px-4 gap-4">
-        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight drop-shadow-sm">
-          <span role="img" aria-label="wave">👋</span> Hey, {profile.name || profile.email.split("@")[0]}
-        </h1>
-        <div className="flex gap-3">
-          <button onClick={handleEditProfile} title="Edit Profile" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 transition">
-            <FaUserEdit /> Edit Profile
-          </button>
-          <button onClick={goToChats} title="Chats" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition">
-            <FaComments /> Chats
-          </button>
-          <button onClick={() => setShowBlockedUsers(true)} title="Blocked Users" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow hover:bg-red-600 transition">
-            <FaBan /> Blocked Users
-          </button>
-          <button onClick={handleLogout} title="Logout" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-500 text-white font-semibold shadow hover:bg-gray-600 transition">
-            <FaSignOutAlt /> Logout
-          </button>
-        </div>
+      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+        <h1 className="text-xl font-semibold text-black">Hey {profile.name || profile.email.split("@")[0]}</h1>
+        <button onClick={goToChats} className="text-2xl text-black hover:text-indigo-600" title="Chats">
+          <FaCommentDots />
+        </button>
       </div>
 
-      {/* PROFILE CARD & STATS */}
-      <div className="flex flex-wrap gap-8 justify-center items-start max-w-5xl mx-auto mb-12 px-4">
-        <div className="backdrop-blur bg-white/90 p-8 rounded-3xl text-center max-w-xs min-w-[300px] shadow-xl relative overflow-hidden">
-          <div className="flex flex-col items-center mb-4">
-            <img src={profile.photoURL} alt="Profile" className="w-28 h-28 rounded-full object-cover border-4 border-indigo-200 shadow" />
-            <span className="mt-2 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Verified</span>
-          </div>
-          <h2 className="text-xl font-bold mb-1">{profile.name}</h2>
+      {/* PROFILE CARD */}
+      <div className="flex flex-col items-center mt-6">
+        <div className="relative bg-white rounded-2xl shadow-lg p-4 w-[320px] flex flex-col items-center border border-indigo-200">
+          {/* Gear Icon Dropdown */}
+          <button
+            className="absolute top-3 right-3 bg-white rounded-full p-2 border-2 border-indigo-400 text-indigo-700 hover:bg-indigo-50 focus:outline-none z-10"
+            onClick={() => setShowDropdown(showDropdown => !showDropdown)}
+            title="Settings"
+          >
+            <FaCog size={22} />
+          </button>
+          {showDropdown && (
+            <div ref={dropdownRef} className="absolute top-12 right-0 w-48 bg-white border-2 border-dotted border-indigo-400 rounded-xl shadow-lg z-20 p-2 animate-fade-in">
+              <button onClick={handleEditProfile} className="block w-full text-left px-4 py-2 hover:bg-indigo-50 rounded">Edit Profile</button>
+              <button onClick={() => setShowBlockedUsers(true)} className="block w-full text-left px-4 py-2 hover:bg-indigo-50 rounded">Blocked Users</button>
+              <button onClick={() => { setFiltersOpen(true); setShowDropdown(false); }} className="block w-full text-left px-4 py-2 hover:bg-indigo-50 rounded">Filters</button>
+              <button onClick={handleLogout} className="block w-full text-left px-4 py-2 hover:bg-indigo-50 rounded">LogOut</button>
+            </div>
+          )}
+          <img src={profile.photoURL} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow mb-2" />
+          <span className="mt-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Verified</span>
+          <h2 className="text-lg font-bold mt-2 mb-1">{profile.name}</h2>
           <p className="text-slate-500 mb-2">{profile.bio || "No bio added yet."}</p>
           <div className="flex flex-wrap justify-center items-center gap-2 text-slate-600 text-sm mb-2">
             <span className="flex items-center gap-1"><FaVenusMars />{profile.gender}</span>
@@ -115,35 +148,24 @@ export default function Dashboard() {
           
           <div className="flex items-center justify-center gap-1 text-slate-400 text-xs"><FaEnvelope />{profile.email}</div>
         </div>
-
-        {/* ACTIVITY STATS */}
-        {/* <div className="bg-white/90 rounded-3xl shadow-xl p-8 flex flex-col items-center min-w-[220px]">
-          <h3 className="text-lg font-bold mb-4 text-slate-700">Your Stats</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col items-center">
-              <FaHeart className="text-pink-400 text-2xl mb-1" />
-              <h4 className="text-xl font-bold">4</h4>
-              <p className="text-xs text-slate-500">Matches</p>
-            </div>
-            <div className="flex flex-col items-center">
-              <FaRegCommentDots className="text-indigo-400 text-2xl mb-1" />4
-              <h4 className="text-xl font-bold">12</h4>
-              <p className="text-xs text-slate-500">Messages</p>
-            </div>
-            <div className="flex flex-col items-center">
-              <FaCalendarAlt className="text-green-400 text-2xl mb-1" />
-              <h4 className="text-xl font-bold">1</h4>
-              <p className="text-xs text-slate-500">Events</p>
-            </div>
-          </div>
-        </div> */}
       </div>
 
-      {/* SWIPE CARDS SECTION */}
-      <div className="max-w-3xl mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-4 text-slate-800">✨ Discover New People</h2>
-        <div>
-          <SwipeCard />
+      {/* DISCOVER PEOPLE + FILTER ICON */}
+      <div className="flex flex-col items-center mt-8">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg font-medium text-black">Discover People</span>
+        </div>
+        {/* SWIPE CARDS SECTION */}
+        <div className="w-full flex flex-col items-center">
+          <div className="w-[260px] h-[320px] bg-indigo-100 rounded-2xl flex items-center justify-center mb-4 relative">
+            {/* SwipeCard component placeholder, should be styled inside SwipeCard */}
+            <SwipeCard />
+          </div>
+          {/* Pass/Like Buttons */}
+          {/* <div className="flex gap-4 mt-2">
+            <button className="flex-1 px-8 py-2 rounded-full border border-indigo-200 bg-purple-100 text-black font-semibold shadow hover:bg-purple-200 transition">✓ Pass</button>
+            <button className="flex-1 px-8 py-2 rounded-full border border-indigo-200 bg-purple-100 text-black font-semibold shadow hover:bg-purple-200 transition">♥ Like</button>
+          </div> */}
         </div>
       </div>
 
@@ -153,6 +175,25 @@ export default function Dashboard() {
         onClose={() => setShowBlockedUsers(false)}
         currentUserId={profile?._id}
       />
+      {/* Filters Modal as full-page overlay */}
+      {filtersOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full relative">
+            <SwipeFilters
+              isOpen={filtersOpen}
+              onToggle={() => setFiltersOpen(false)}
+              onFiltersChange={handleFiltersChange}
+            />
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl"
+              onClick={() => setFiltersOpen(false)}
+              aria-label="Close Filters"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

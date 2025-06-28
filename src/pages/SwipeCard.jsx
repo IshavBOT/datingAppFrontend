@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
-import SwipeFilters from "../components/SwipeFilters";
 import UserActionsMenu from "../components/UserActionsMenu";
 
 const SwipeCards = () => {
@@ -12,40 +11,23 @@ const SwipeCards = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [swiping, setSwiping] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({
-    branch: '',
-    year: '',
-    gender: '',
-    tags: []
-  });
 
-  const fetchProfiles = async (filters = {}) => {
+  const fetchProfiles = async () => {
     if (!currentUserId) {
       setError("User ID not found. Please log in again.");
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
       setError("");
-      
-      // Build query parameters
       const params = { userId: currentUserId };
-      if (filters.branch) params.branch = filters.branch;
-      if (filters.year) params.year = filters.year;
-      if (filters.gender) params.gender = filters.gender;
-      if (filters.tags && filters.tags.length > 0) params.tags = filters.tags;
-
       const res = await axios.get("http://localhost:5000/api/profile", { params });
-
       const profiles = res.data.profiles || [];
       setProfiles(profiles);
-      setCurrentIndex(0); // Reset to first profile when filters change
-
+      setCurrentIndex(0);
       if (profiles.length === 0) {
-        setError("No profiles match your current filters. Try adjusting your preferences!");
+        setError("No profiles found. Try again later!");
       }
     } catch (err) {
       console.error("Error fetching profiles:", err);
@@ -59,28 +41,18 @@ const SwipeCards = () => {
     fetchProfiles();
   }, [currentUserId]);
 
-  const handleFiltersChange = (newFilters) => {
-    setActiveFilters(newFilters);
-    fetchProfiles(newFilters);
-  };
-
   const handleSwipe = async (direction) => {
     const profile = profiles[currentIndex];
     if (!profile || !["left", "right"].includes(direction) || swiping) return;
-
     const action = direction === "right" ? "like" : "dislike";
     setSwiping(true);
-
     try {
       const response = await axios.post("http://localhost:5000/api/profile/swipe", {
         fromUserId: currentUserId,
         toUserId: profile._id,
         action,
       });
-
       const { message } = response.data;
-      
-      // Show toast for match
       if (message === "It's a match!") {
         toast.success(
           `🎉 It's a match with ${profile.name || profile.email.split("@")[0]}!`,
@@ -106,8 +78,6 @@ const SwipeCards = () => {
           position: "top-center",
         });
       }
-
-      // Move to next profile
       setCurrentIndex((prev) => prev + 1);
     } catch (err) {
       console.error("Swipe failed:", err);
@@ -136,15 +106,9 @@ const SwipeCards = () => {
         <div className="flex gap-2">
           <button 
             className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold mt-2 hover:bg-indigo-700 transition"
-            onClick={() => fetchProfiles(activeFilters)}
+            onClick={fetchProfiles}
           >
             Try Again
-          </button>
-          <button 
-            className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold mt-2 hover:bg-gray-700 transition"
-            onClick={() => handleFiltersChange({ branch: '', year: '', gender: '', tags: [] })}
-          >
-            Clear Filters
           </button>
         </div>
       </div>
@@ -157,26 +121,15 @@ const SwipeCards = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-2">🎉 You've seen everyone!</h2>
           <p className="text-slate-500 mb-4">
-            {Object.values(activeFilters).some(val => val && (Array.isArray(val) ? val.length > 0 : true))
-              ? "Try adjusting your filters to see more profiles."
-              : "Check back later for new connections, or try expanding your preferences."
-            }
+            Check back later for new connections.
           </p>
           <div className="flex gap-2 justify-center">
             <button 
               className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
-              onClick={() => fetchProfiles(activeFilters)}
+              onClick={fetchProfiles}
             >
               Refresh
             </button>
-            {Object.values(activeFilters).some(val => val && (Array.isArray(val) ? val.length > 0 : true)) && (
-              <button 
-                className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700 transition"
-                onClick={() => handleFiltersChange({ branch: '', year: '', gender: '', tags: [] })}
-              >
-                Clear Filters
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -192,14 +145,6 @@ const SwipeCards = () => {
   return (
     <div className="flex flex-col items-center">
       <Toaster />
-      
-      {/* Filters Section */}
-      <SwipeFilters 
-        onFiltersChange={handleFiltersChange}
-        isOpen={filtersOpen}
-        onToggle={() => setFiltersOpen(!filtersOpen)}
-      />
-
       {/* Profile Card */}
       <div className="flex justify-center mb-6">
         <div 
@@ -212,12 +157,10 @@ const SwipeCards = () => {
               user={currentProfile} 
               currentUserId={currentUserId} 
               onClose={() => {
-                // Move to next profile when user is blocked/reported
                 setCurrentIndex((prev) => prev + 1);
               }}
             />
           </div>
-
           <div className="bg-gradient-to-t from-black/70 to-transparent p-6 rounded-b-3xl">
             <h2 className="text-2xl font-bold text-white mb-1">
               {currentProfile.name || currentProfile.email.split("@")[0]}, {currentProfile.year}
@@ -228,8 +171,6 @@ const SwipeCards = () => {
               <span>•</span>
               <span>{currentProfile.branch}</span>
             </div>
-            
-            {/* Display tags if available */}
             {currentProfile.tags && currentProfile.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {currentProfile.tags.slice(0, 3).map((tag, index) => (
@@ -250,7 +191,6 @@ const SwipeCards = () => {
           </div>
         </div>
       </div>
-
       {/* Swipe Buttons */}
       <div className="flex gap-6 mt-2">
         <button 
