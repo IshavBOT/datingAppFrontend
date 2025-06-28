@@ -23,22 +23,22 @@ const Matches = () => {
     fetchMatches();
   }, [userId]);
 
-  if (loading) return <h2>Loading matches...</h2>;
-  if (matches.length === 0) return <h2>No matches yet 😢</h2>;
+  if (loading) return <h2 className="text-center text-xl font-semibold mt-10">Loading matches...</h2>;
+  if (matches.length === 0) return <h2 className="text-center text-xl font-semibold mt-10">No matches yet 😢</h2>;
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Your Matches</h2>
-      <div style={styles.grid}>
+    <div className="p-8 max-w-5xl mx-auto">
+      <h2 className="text-3xl font-bold text-center mb-8">Your Matches</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {matches.map((match) => (
-          <div key={match._id} style={styles.card}>
+          <div key={match._id} className="bg-white rounded-xl p-6 shadow-lg text-center flex flex-col items-center">
             <img
               src={match.photoURL || "https://via.placeholder.com/200"}
               alt={match.name}
-              style={styles.image}
+              className="w-full h-56 object-cover rounded-lg mb-4"
             />
-            <h3 style={styles.name}>{match.name}</h3>
-            <p style={styles.bio}>{match.bio}</p>
+            <h3 className="text-xl font-semibold mb-1">{match.name}</h3>
+            <p className="text-gray-500 text-sm">{match.bio}</p>
           </div>
         ))}
       </div>
@@ -47,42 +47,3 @@ const Matches = () => {
 };
 
 export default Matches;
-
-const styles = {
-  container: {
-    padding: "2rem",
-    maxWidth: "900px",
-    margin: "auto",
-  },
-  heading: {
-    fontSize: "2rem",
-    textAlign: "center",
-    marginBottom: "2rem",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "1.5rem",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "12px",
-    padding: "1rem",
-    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-    textAlign: "center",
-  },
-  image: {
-    width: "100%",
-    height: "220px",
-    objectFit: "cover",
-    borderRadius: "8px",
-  },
-  name: {
-    margin: "0.75rem 0 0.25rem",
-    fontSize: "1.25rem",
-  },
-  bio: {
-    fontSize: "0.9rem",
-    color: "#666",
-  },
-};

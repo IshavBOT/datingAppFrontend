@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import SwipeFilters from "../components/SwipeFilters";
+import UserActionsMenu from "../components/UserActionsMenu";
 
 const SwipeCards = () => {
   const [profiles, setProfiles] = useState([]);
@@ -10,37 +12,57 @@ const SwipeCards = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [swiping, setSwiping] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    branch: '',
+    year: '',
+    gender: '',
+    tags: []
+  });
+
+  const fetchProfiles = async (filters = {}) => {
+    if (!currentUserId) {
+      setError("User ID not found. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      
+      // Build query parameters
+      const params = { userId: currentUserId };
+      if (filters.branch) params.branch = filters.branch;
+      if (filters.year) params.year = filters.year;
+      if (filters.gender) params.gender = filters.gender;
+      if (filters.tags && filters.tags.length > 0) params.tags = filters.tags;
+
+      const res = await axios.get("http://localhost:5000/api/profile", { params });
+
+      const profiles = res.data.profiles || [];
+      setProfiles(profiles);
+      setCurrentIndex(0); // Reset to first profile when filters change
+
+      if (profiles.length === 0) {
+        setError("No profiles match your current filters. Try adjusting your preferences!");
+      }
+    } catch (err) {
+      console.error("Error fetching profiles:", err);
+      setError("Failed to fetch profiles. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      if (!currentUserId) {
-        setError("User ID not found. Please log in again.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Use the profile route that excludes already swiped/matched users
-        const res = await axios.get("http://localhost:5000/api/profile", {
-          params: { userId: currentUserId },
-        });
-
-        const profiles = res.data.profiles || [];
-        setProfiles(profiles);
-
-        if (profiles.length === 0) {
-          setError("No more profiles to show! Check back later for new connections.");
-        }
-      } catch (err) {
-        console.error("Error fetching profiles:", err);
-        setError("Failed to fetch profiles. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProfiles();
   }, [currentUserId]);
+
+  const handleFiltersChange = (newFilters) => {
+    setActiveFilters(newFilters);
+    fetchProfiles(newFilters);
+  };
 
   const handleSwipe = async (direction) => {
     const profile = profiles[currentIndex];
@@ -100,41 +122,62 @@ const SwipeCards = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Finding amazing people for you...</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+        <p className="text-lg text-slate-600">Finding amazing people for you...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <h2 style={styles.errorText}>{error}</h2>
-        <button 
-          style={styles.retryButton}
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </button>
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <h2 className="text-xl font-semibold text-red-500 mb-2">{error}</h2>
+        <div className="flex gap-2">
+          <button 
+            className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold mt-2 hover:bg-indigo-700 transition"
+            onClick={() => fetchProfiles(activeFilters)}
+          >
+            Try Again
+          </button>
+          <button 
+            className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold mt-2 hover:bg-gray-700 transition"
+            onClick={() => handleFiltersChange({ branch: '', year: '', gender: '', tags: [] })}
+          >
+            Clear Filters
+          </button>
+        </div>
       </div>
     );
   }
 
   if (currentIndex >= profiles.length) {
     return (
-      <div style={styles.noMoreContainer}>
-        <div style={styles.noMoreCard}>
-          <h2 style={styles.noMoreTitle}>🎉 You've seen everyone!</h2>
-          <p style={styles.noMoreText}>
-            Check back later for new connections, or try expanding your preferences.
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <h2 className="text-2xl font-bold mb-2">🎉 You've seen everyone!</h2>
+          <p className="text-slate-500 mb-4">
+            {Object.values(activeFilters).some(val => val && (Array.isArray(val) ? val.length > 0 : true))
+              ? "Try adjusting your filters to see more profiles."
+              : "Check back later for new connections, or try expanding your preferences."
+            }
           </p>
-          <button 
-            style={styles.refreshButton}
-            onClick={() => window.location.reload()}
-          >
-            Refresh
-          </button>
+          <div className="flex gap-2 justify-center">
+            <button 
+              className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
+              onClick={() => fetchProfiles(activeFilters)}
+            >
+              Refresh
+            </button>
+            {Object.values(activeFilters).some(val => val && (Array.isArray(val) ? val.length > 0 : true)) && (
+              <button 
+                className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700 transition"
+                onClick={() => handleFiltersChange({ branch: '', year: '', gender: '', tags: [] })}
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -147,237 +190,86 @@ const SwipeCards = () => {
     "https://via.placeholder.com/300x400?text=No+Image";
 
   return (
-    <div style={styles.container}>
+    <div className="flex flex-col items-center">
       <Toaster />
       
-      <div style={styles.cardContainer}>
+      {/* Filters Section */}
+      <SwipeFilters 
+        onFiltersChange={handleFiltersChange}
+        isOpen={filtersOpen}
+        onToggle={() => setFiltersOpen(!filtersOpen)}
+      />
+
+      {/* Profile Card */}
+      <div className="flex justify-center mb-6">
         <div 
-          style={{ 
-            ...styles.card, 
-            backgroundImage: `url(${profilePhoto})`,
-            opacity: swiping ? 0.7 : 1,
-            transform: swiping ? "scale(0.95)" : "scale(1)",
-          }}
+          className={`relative w-80 h-[420px] bg-cover bg-center rounded-3xl shadow-xl flex flex-col justify-end transition-all duration-200 ${swiping ? 'opacity-70 scale-95' : 'opacity-100 scale-100'}`}
+          style={{ backgroundImage: `url(${profilePhoto})` }}
         >
-          <div style={styles.info}>
-            <h2 style={styles.name}>
+          {/* User Actions Menu */}
+          <div className="absolute top-4 right-4 z-10">
+            <UserActionsMenu 
+              user={currentProfile} 
+              currentUserId={currentUserId} 
+              onClose={() => {
+                // Move to next profile when user is blocked/reported
+                setCurrentIndex((prev) => prev + 1);
+              }}
+            />
+          </div>
+
+          <div className="bg-gradient-to-t from-black/70 to-transparent p-6 rounded-b-3xl">
+            <h2 className="text-2xl font-bold text-white mb-1">
               {currentProfile.name || currentProfile.email.split("@")[0]}, {currentProfile.year}
             </h2>
-            <p style={styles.bio}>{currentProfile.bio || "No bio available"}</p>
-            <div style={styles.details}>
-              <span style={styles.detail}>{currentProfile.gender}</span>
-              <span style={styles.separator}>•</span>
-              <span style={styles.detail}>{currentProfile.branch}</span>
+            <p className="text-white/80 mb-2">{currentProfile.bio || "No bio available"}</p>
+            <div className="flex items-center gap-2 text-white/70 text-sm mb-2">
+              <span>{currentProfile.gender}</span>
+              <span>•</span>
+              <span>{currentProfile.branch}</span>
             </div>
+            
+            {/* Display tags if available */}
+            {currentProfile.tags && currentProfile.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {currentProfile.tags.slice(0, 3).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-white/20 text-white text-xs rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {currentProfile.tags.length > 3 && (
+                  <span className="px-2 py-1 bg-white/20 text-white text-xs rounded-full">
+                    +{currentProfile.tags.length - 3} more
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div style={styles.buttonRow}>
+      {/* Swipe Buttons */}
+      <div className="flex gap-6 mt-2">
         <button 
-          style={{
-            ...styles.dislikeButton,
-            opacity: swiping ? 0.6 : 1,
-            cursor: swiping ? "not-allowed" : "pointer",
-          }}
+          className={`px-8 py-3 rounded-full font-bold text-lg transition-all duration-150 border-2 border-red-400 text-red-500 bg-white shadow hover:bg-red-50 ${swiping ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105'}`}
           onClick={() => handleSwipe("left")}
           disabled={swiping}
         >
           ❌ Pass
         </button>
         <button 
-          style={{
-            ...styles.likeButton,
-            opacity: swiping ? 0.6 : 1,
-            cursor: swiping ? "not-allowed" : "pointer",
-          }}
+          className={`px-8 py-3 rounded-full font-bold text-lg transition-all duration-150 border-2 border-green-400 text-green-600 bg-white shadow hover:bg-green-50 ${swiping ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105'}`}
           onClick={() => handleSwipe("right")}
           disabled={swiping}
         >
           ❤️ Like
         </button>
       </div>
-
-      <div style={styles.progressContainer}>
-        <p style={styles.progressText}>
-          {currentIndex + 1} of {profiles.length} profiles
-        </p>
-      </div>
     </div>
   );
 };
 
 export default SwipeCards;
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginTop: "2rem",
-    padding: "0 1rem",
-  },
-  cardContainer: {
-    position: "relative",
-    marginBottom: "2rem",
-  },
-  card: {
-    width: "320px",
-    height: "450px",
-    borderRadius: "20px",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    boxShadow: "0 15px 30px rgba(0,0,0,0.3)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    padding: "20px",
-    color: "#fff",
-    transition: "all 0.3s ease",
-    position: "relative",
-  },
-  info: {
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    padding: "15px",
-    borderRadius: "15px",
-    backdropFilter: "blur(10px)",
-  },
-  name: {
-    margin: "0 0 8px 0",
-    fontSize: "1.5rem",
-    fontWeight: "600",
-  },
-  bio: {
-    margin: "0 0 10px 0",
-    fontSize: "0.9rem",
-    lineHeight: "1.4",
-    opacity: 0.9,
-  },
-  details: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "0.8rem",
-    opacity: 0.8,
-  },
-  detail: {
-    textTransform: "capitalize",
-  },
-  separator: {
-    opacity: 0.6,
-  },
-  buttonRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    width: "100%",
-    maxWidth: "320px",
-    gap: "1rem",
-    marginBottom: "1rem",
-  },
-  likeButton: {
-    backgroundColor: "#10b981",
-    color: "#fff",
-    padding: "12px 24px",
-    border: "none",
-    borderRadius: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontSize: "1rem",
-    transition: "all 0.2s ease",
-    flex: 1,
-  },
-  dislikeButton: {
-    backgroundColor: "#ef4444",
-    color: "#fff",
-    padding: "12px 24px",
-    border: "none",
-    borderRadius: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontSize: "1rem",
-    transition: "all 0.2s ease",
-    flex: 1,
-  },
-  progressContainer: {
-    textAlign: "center",
-  },
-  progressText: {
-    color: "#6b7280",
-    fontSize: "0.875rem",
-    margin: 0,
-  },
-  loadingContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "400px",
-  },
-  spinner: {
-    width: "40px",
-    height: "40px",
-    border: "4px solid #e5e7eb",
-    borderTop: "4px solid #4f46e5",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
-  },
-  loadingText: {
-    marginTop: "1rem",
-    color: "#6b7280",
-    fontSize: "1rem",
-  },
-  errorContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "400px",
-    textAlign: "center",
-  },
-  errorText: {
-    color: "#dc3545",
-    marginBottom: "1rem",
-  },
-  retryButton: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
-    padding: "10px 20px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "1rem",
-  },
-  noMoreContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "400px",
-  },
-  noMoreCard: {
-    background: "#fff",
-    padding: "2rem",
-    borderRadius: "16px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-    textAlign: "center",
-    maxWidth: "400px",
-  },
-  noMoreTitle: {
-    color: "#1f2937",
-    marginBottom: "1rem",
-  },
-  noMoreText: {
-    color: "#6b7280",
-    marginBottom: "1.5rem",
-    lineHeight: "1.5",
-  },
-  refreshButton: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
-    padding: "10px 20px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "1rem",
-  },
-};

@@ -54,55 +54,56 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.logoContainer}>
-          <h1 style={styles.logo}>Campus Connect</h1>
-          <p style={styles.tagline}>Connect with your college community</p>
+    <div className="min-h-screen bg-black flex justify-center items-center p-2 sm:p-4">
+      <div className="bg-black rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-[400px] md:max-w-md lg:max-w-lg xl:max-w-xl overflow-hidden border border-slate-700 mx-auto">
+        <div className="bg-black p-4 sm:p-6 md:p-8 text-center text-white">
+          <h1 className="m-0 text-3xl sm:text-4xl font-bold tracking-tight text-white font-pacifico" style={{ fontFamily: 'Pacifico, cursive' }}>
+            Campus Connect
+          </h1>
         </div>
-        
-        <div style={styles.formContainer}>
-          <h2 style={styles.title}>Welcome Back</h2>
-          
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Email</label>
+        <div className="p-4 sm:p-6 md:p-8">
+          <h2 className="mb-2 text-lg sm:text-xl font-semibold text-white">Welcome Back</h2>
+          <p className="mb-6 text-white text-xs sm:text-sm leading-relaxed">
+            Sign in to your account to continue connecting with your college community.
+          </p>
+          <div className="mb-5">
+            <label className="block mb-2 text-xs sm:text-sm font-medium text-white">Email</label>
             <input
-              style={styles.input}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-slate-600 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition bg-black text-white placeholder-slate-400"
               type="email"
               placeholder="Enter your college email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Password</label>
+          <div className="mb-5">
+            <label className="block mb-2 text-xs sm:text-sm font-medium text-white">Password</label>
             <input
-              style={styles.input}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-slate-600 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition bg-black text-white placeholder-slate-400"
               type="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
           <button
-            style={styles.button}
+            className={`w-full py-2 sm:py-3 rounded-lg font-semibold text-white text-sm sm:text-base transition mb-2 ${
+              loading ? "bg-indigo-400 cursor-not-allowed opacity-70" : "bg-indigo-700 hover:bg-indigo-800 cursor-pointer"
+            }`}
             onClick={handleLogin}
             disabled={loading}
           >
-            {loading ? (
-              <span style={styles.loadingText}>
-                <span style={styles.loadingDots}>...</span>
-              </span>
-            ) : (
-              "Sign In"
-            )}
+            {loading ? "Logging In..." : "Log In"}
           </button>
-
-          <p style={styles.signupText}>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-2 sm:py-3 rounded-lg font-semibold text-white text-sm sm:text-base transition bg-slate-500 hover:bg-slate-600 mt-4"
+          >
+            Create New Account
+          </button>
+          <p className="mt-6 text-center text-slate-400 text-xs sm:text-sm">
             Don't have an account?{" "}
-            <a href="/signup" style={styles.signupLink}>
+            <a href="/" className="text-indigo-400 hover:underline font-medium">
               Sign up
             </a>
           </p>
@@ -111,98 +112,3 @@ export default function Login() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "1rem",
-  },
-  card: {
-    background: "white",
-    borderRadius: "16px",
-    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-    width: "100%",
-    maxWidth: "420px",
-    overflow: "hidden",
-  },
-  logoContainer: {
-    background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
-    padding: "2rem",
-    textAlign: "center",
-    color: "white",
-  },
-  logo: {
-    margin: 0,
-    fontSize: "2rem",
-    fontWeight: "700",
-    letterSpacing: "-0.5px",
-  },
-  tagline: {
-    margin: "0.5rem 0 0",
-    opacity: 0.9,
-    fontSize: "1rem",
-  },
-  formContainer: {
-    padding: "2rem",
-  },
-  title: {
-    margin: "0 0 1.5rem",
-    fontSize: "1.5rem",
-    fontWeight: "600",
-    color: "#1e293b",
-  },
-  inputGroup: {
-    marginBottom: "1.25rem",
-  },
-  label: {
-    display: "block",
-    marginBottom: "0.5rem",
-    fontSize: "0.875rem",
-    fontWeight: "500",
-    color: "#4b5563",
-  },
-  input: {
-    width: "100%",
-    padding: "0.75rem 1rem",
-    borderRadius: "8px",
-    border: "1px solid #e2e8f0",
-    fontSize: "1rem",
-    transition: "all 0.2s ease",
-  },
-  button: {
-    width: "100%",
-    padding: "0.875rem",
-    background: "#4f46e5",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "1rem",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    marginTop: "1rem",
-  },
-  loadingText: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingDots: {
-    animation: "loading 1.5s infinite",
-  },
-  signupText: {
-    marginTop: "1.5rem",
-    textAlign: "center",
-    color: "#64748b",
-    fontSize: "0.875rem",
-  },
-  signupLink: {
-    color: "#4f46e5",
-    fontWeight: "600",
-    textDecoration: "none",
-  },
-};

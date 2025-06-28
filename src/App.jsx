@@ -32,22 +32,7 @@ function App() {
     <UnreadContext.Provider value={{ unread, setUnread }}>
       <div className={dark ? 'dark bg-gray-900 min-h-screen' : 'bg-gray-50 min-h-screen'}>
         <Router>
-          <div className="fixed top-4 right-4 z-50">
-            <button
-              aria-label="Toggle light/dark mode"
-              onClick={() => setDark((d) => !d)}
-              className="focus:outline-none"
-            >
-              <BsLightbulbFill
-                className={
-                  dark
-                    ? 'text-gray-400 text-3xl transition-colors duration-300 drop-shadow'
-                    : 'text-yellow-400 text-3xl transition-colors duration-300 drop-shadow-glow'
-                }
-                style={{ filter: dark ? 'none' : 'drop-shadow(0 0 8px #fde047)' }}
-              />
-            </button>
-          </div>
+          
           <Routes>
             <Route path="/" element={<SendLink />} />
             <Route path="/complete-signup" element={<CompleteSignup />} />

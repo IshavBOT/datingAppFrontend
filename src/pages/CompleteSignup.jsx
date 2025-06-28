@@ -60,29 +60,27 @@ export default function CompleteSignup() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Complete Signup</h2>
-        <p style={styles.subtitle}>
-          Set your name and password to create your account.
-        </p>
+    <div className="min-h-screen bg-gradient-to-r from-indigo-400 to-purple-500 flex justify-center items-center">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
+        <h2 className="text-2xl font-semibold mb-2 text-slate-800">Complete Signup</h2>
+        <p className="text-sm text-slate-500 mb-6">Set your name and password to create your account.</p>
         <input
           type="text"
           placeholder="Full Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={styles.input}
+          className="w-full px-4 py-3 mb-4 rounded-lg border border-slate-200 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
         />
         <input
           type="password"
           placeholder="Create Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
+          className="w-full px-4 py-3 mb-4 rounded-lg border border-slate-200 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
         />
         <button
           onClick={handleSignup}
-          style={styles.button}
+          className={`w-full py-3 rounded-lg font-semibold text-white text-base transition mb-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-700 hover:bg-indigo-800 cursor-pointer"}`}
           disabled={loading}
         >
           {loading ? "Submitting..." : "Continue"}
@@ -91,52 +89,3 @@ export default function CompleteSignup() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "linear-gradient(to right, #667eea, #764ba2)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  card: {
-    background: "#fff",
-    padding: "2rem",
-    borderRadius: "12px",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "400px",
-    textAlign: "center",
-  },
-  title: {
-    fontSize: "24px",
-    fontWeight: "600",
-    marginBottom: "1rem",
-    color: "#333",
-  },
-  subtitle: {
-    fontSize: "14px",
-    color: "#666",
-    marginBottom: "1.5rem",
-  },
-  input: {
-    width: "100%",
-    padding: "0.75rem",
-    marginBottom: "1rem",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-  },
-  button: {
-    width: "100%",
-    padding: "0.75rem",
-    backgroundColor: "#4a90e2",
-    color: "#fff",
-    fontSize: "16px",
-    fontWeight: "600",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
-};

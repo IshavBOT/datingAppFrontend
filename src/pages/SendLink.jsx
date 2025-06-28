@@ -34,63 +34,55 @@ export default function SendLink() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.logoContainer}>
-          <h1 style={styles.logo}>Campus Connect</h1>
-          <p style={styles.tagline}>Connect with your college community</p>
+    <div className="min-h-screen bg-black flex justify-center items-center p-2 sm:p-4">
+      <div className="bg-black rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-[400px] md:max-w-md lg:max-w-lg xl:max-w-xl overflow-hidden border border-slate-700 mx-auto">
+        <div className="bg-black p-4 sm:p-6 md:p-8 text-center text-white">
+          <h1 className="m-0 text-3xl sm:text-4xl font-bold tracking-tight text-white font-pacifico" style={{ fontFamily: 'Pacifico, cursive' }}>
+            Campus Connect
+          </h1>
         </div>
-
-        <div style={styles.formContainer}>
-          <h2 style={styles.title}>Get Started</h2>
-          <p style={styles.description}>
+        <div className="p-4 sm:p-6 md:p-8">
+          <h2 className="mb-2 text-lg sm:text-xl font-semibold text-white">Get Started</h2>
+          <p className="mb-6 text-white text-xs sm:text-sm leading-relaxed">
             Enter your college email to receive a verification link and join the community.
           </p>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>College Email</label>
+          <div className="mb-6">
+            <label className="block mb-2 text-xs sm:text-sm font-medium text-white">College Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your college email"
-              style={styles.input}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-slate-600 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:bg-slate-100 bg-black text-white placeholder-slate-400"
               disabled={sent}
             />
-            <p style={styles.helperText}>
+            <p className="mt-2 text-xs text-slate-400">
               Only DTU, NSUT, or IGDTUW email addresses are accepted.
             </p>
           </div>
-
           <button
             onClick={handleSendLink}
-            style={{
-              ...styles.button,
-              background: sent ? "#22c55e" : "#4f46e5",
-              cursor: sent ? "default" : "pointer",
-            }}
+            className={`w-full py-2 sm:py-3 rounded-lg font-semibold text-white text-sm sm:text-base transition mb-2 ${
+              sent
+                ? "bg-green-500 cursor-default"
+                : "bg-indigo-700 hover:bg-indigo-800 cursor-pointer"
+            } ${loading ? "opacity-70" : ""}`}
             disabled={loading || sent}
           >
             {loading ? "Sending..." : sent ? "Link Sent!" : "Send Verification Link"}
           </button>
-
           <button
             onClick={() => navigate("/login")}
-            style={{
-              ...styles.button,
-              background: "#64748b",
-              marginTop: "1rem",
-            }}
+            className="w-full py-2 sm:py-3 rounded-lg font-semibold text-white text-sm sm:text-base transition bg-slate-500 hover:bg-slate-600 mt-4"
           >
             Login with Email & Password
           </button>
-
           {sent && (
-            <div style={styles.successMessage}>
-              <p style={styles.successText}>
+            <div className="mt-6 p-3 sm:p-4 bg-green-50 border border-green-300 rounded-lg text-center">
+              <p className="m-0 text-green-800 text-xs sm:text-sm font-medium">
                 Verification link sent to <strong>{email}</strong>!
               </p>
-              <p style={styles.successSubtext}>
+              <p className="mt-2 text-green-800 text-xs opacity-80">
                 Please check your inbox and spam folder.
               </p>
             </div>
@@ -100,114 +92,4 @@ export default function SendLink() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "1rem",
-  },
-  card: {
-    background: "white",
-    borderRadius: "16px",
-    boxShadow:
-      "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-    width: "100%",
-    maxWidth: "420px",
-    overflow: "hidden",
-  },
-  logoContainer: {
-    background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
-    padding: "2rem",
-    textAlign: "center",
-    color: "white",
-  },
-  logo: {
-    margin: 0,
-    fontSize: "2rem",
-    fontWeight: "700",
-    letterSpacing: "-0.5px",
-  },
-  tagline: {
-    margin: "0.5rem 0 0",
-    opacity: 0.9,
-    fontSize: "1rem",
-  },
-  formContainer: {
-    padding: "2rem",
-  },
-  title: {
-    margin: "0 0 0.5rem",
-    fontSize: "1.5rem",
-    fontWeight: "600",
-    color: "#1e293b",
-  },
-  description: {
-    margin: "0 0 1.5rem",
-    color: "#64748b",
-    fontSize: "0.875rem",
-    lineHeight: "1.5",
-  },
-  inputGroup: {
-    marginBottom: "1.5rem",
-  },
-  label: {
-    display: "block",
-    marginBottom: "0.5rem",
-    fontSize: "0.875rem",
-    fontWeight: "500",
-    color: "#4b5563",
-  },
-  input: {
-    width: "100%",
-    padding: "0.75rem 1rem",
-    borderRadius: "8px",
-    border: "1px solid #e2e8f0",
-    fontSize: "1rem",
-    transition: "all 0.2s ease",
-  },
-  helperText: {
-    margin: "0.5rem 0 0",
-    fontSize: "0.75rem",
-    color: "#64748b",
-  },
-  button: {
-    width: "100%",
-    padding: "0.875rem",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "1rem",
-    fontWeight: "600",
-    transition: "all 0.2s ease",
-  },
-  loadingText: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  successMessage: {
-    marginTop: "1.5rem",
-    padding: "1rem",
-    background: "#f0fdf4",
-    border: "1px solid #86efac",
-    borderRadius: "8px",
-    textAlign: "center",
-  },
-  successText: {
-    margin: 0,
-    color: "#166534",
-    fontSize: "0.875rem",
-    fontWeight: "500",
-  },
-  successSubtext: {
-    margin: "0.5rem 0 0",
-    color: "#166534",
-    fontSize: "0.75rem",
-    opacity: 0.8,
-  },
-};
 

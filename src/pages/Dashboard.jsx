@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SwipeCard from "../pages/SwipeCard"; // Adjust path
-import { FaUserEdit, FaSignOutAlt, FaComments, FaVenusMars, FaGraduationCap, FaEnvelope, FaHeart, FaRegCommentDots, FaCalendarAlt } from "react-icons/fa";
+import BlockedUsersModal from "../components/BlockedUsersModal";
+import { FaUserEdit, FaSignOutAlt, FaComments, FaVenusMars, FaGraduationCap, FaEnvelope, FaHeart, FaRegCommentDots, FaCalendarAlt, FaBan } from "react-icons/fa";
 
 export default function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showBlockedUsers, setShowBlockedUsers] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,9 +45,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div style={styles.loaderContainer}>
-        <div className="spinner" style={styles.spinner}></div>
-        <p style={styles.loadingText}>Fetching your profile...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+        <p className="text-lg text-slate-600">Fetching your profile...</p>
       </div>
     );
   }
@@ -53,317 +55,104 @@ export default function Dashboard() {
   if (!profile) return null;
 
   return (
-    <div style={styles.page}>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-white py-8">
       {/* HEADER */}
-      <div style={styles.header}>
-        <h1 style={styles.title}>
+      <div className="flex flex-col md:flex-row justify-between items-center max-w-5xl mx-auto mb-10 px-4 gap-4">
+        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight drop-shadow-sm">
           <span role="img" aria-label="wave">👋</span> Hey, {profile.name || profile.email.split("@")[0]}
         </h1>
-        <div style={styles.buttonGroup}>
-          <button style={styles.secondaryButton} onClick={handleEditProfile} title="Edit Profile">
-            <FaUserEdit style={{ marginRight: 8 }} /> Edit Profile
+        <div className="flex gap-3">
+          <button onClick={handleEditProfile} title="Edit Profile" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 transition">
+            <FaUserEdit /> Edit Profile
           </button>
-          <button style={styles.secondaryButton} onClick={goToChats} title="Chats">
-            <FaComments style={{ marginRight: 8 }} /> Chats
+          <button onClick={goToChats} title="Chats" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition">
+            <FaComments /> Chats
           </button>
-          <button style={styles.logoutButton} onClick={handleLogout} title="Logout">
-            <FaSignOutAlt style={{ marginRight: 8 }} /> Logout
+          <button onClick={() => setShowBlockedUsers(true)} title="Blocked Users" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow hover:bg-red-600 transition">
+            <FaBan /> Blocked Users
+          </button>
+          <button onClick={handleLogout} title="Logout" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-500 text-white font-semibold shadow hover:bg-gray-600 transition">
+            <FaSignOutAlt /> Logout
           </button>
         </div>
       </div>
 
       {/* PROFILE CARD & STATS */}
-      <div style={styles.profileStatsWrapper}>
-        <div style={styles.card}>
-          <div style={styles.avatarWrapper}>
-            <img src={profile.photoURL} alt="Profile" style={styles.avatar} />
-            <span style={styles.badge}>Verified</span>
+      <div className="flex flex-wrap gap-8 justify-center items-start max-w-5xl mx-auto mb-12 px-4">
+        <div className="backdrop-blur bg-white/90 p-8 rounded-3xl text-center max-w-xs min-w-[300px] shadow-xl relative overflow-hidden">
+          <div className="flex flex-col items-center mb-4">
+            <img src={profile.photoURL} alt="Profile" className="w-28 h-28 rounded-full object-cover border-4 border-indigo-200 shadow" />
+            <span className="mt-2 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Verified</span>
           </div>
-          <h2 style={styles.name}>{profile.name}</h2>
-          <p style={styles.bio}>{profile.bio || "No bio added yet."}</p>
-          <div style={styles.meta}>
-            <span><FaVenusMars style={{ marginRight: 4 }} />{profile.gender}</span>
-            <span style={styles.dot}>•</span>
-            <span><FaGraduationCap style={{ marginRight: 4 }} />{profile.year}</span>
-            <span style={styles.dot}>•</span>
+          <h2 className="text-xl font-bold mb-1">{profile.name}</h2>
+          <p className="text-slate-500 mb-2">{profile.bio || "No bio added yet."}</p>
+          <div className="flex flex-wrap justify-center items-center gap-2 text-slate-600 text-sm mb-2">
+            <span className="flex items-center gap-1"><FaVenusMars />{profile.gender}</span>
+            <span className="mx-1">•</span>
+            <span className="flex items-center gap-1"><FaGraduationCap />{profile.year}</span>
+            <span className="mx-1">•</span>
             <span>{profile.branch}</span>
           </div>
-          <div style={styles.email}><FaEnvelope style={{ marginRight: 4 }} />{profile.email}</div>
+          
+          {/* Display tags if available */}
+          {profile.tags && profile.tags.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1 mb-2">
+              {profile.tags.slice(0, 4).map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+              {profile.tags.length > 4 && (
+                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  +{profile.tags.length - 4} more
+                </span>
+              )}
+            </div>
+          )}
+          
+          <div className="flex items-center justify-center gap-1 text-slate-400 text-xs"><FaEnvelope />{profile.email}</div>
         </div>
 
         {/* ACTIVITY STATS */}
-        <div style={styles.statsCard}>
-          <h3 style={styles.statsHeader}>Your Stats</h3>
-          <div style={styles.statsGrid}>
-            <div style={styles.statBox}>
-              <FaHeart style={styles.statIcon} />
-              <h4 style={styles.statNumber}>4</h4>
-              <p style={styles.statLabel}>Matches</p>
+        {/* <div className="bg-white/90 rounded-3xl shadow-xl p-8 flex flex-col items-center min-w-[220px]">
+          <h3 className="text-lg font-bold mb-4 text-slate-700">Your Stats</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col items-center">
+              <FaHeart className="text-pink-400 text-2xl mb-1" />
+              <h4 className="text-xl font-bold">4</h4>
+              <p className="text-xs text-slate-500">Matches</p>
             </div>
-            <div style={styles.statBox}>
-              <FaRegCommentDots style={styles.statIcon} />
-              <h4 style={styles.statNumber}>12</h4>
-              <p style={styles.statLabel}>Messages</p>
+            <div className="flex flex-col items-center">
+              <FaRegCommentDots className="text-indigo-400 text-2xl mb-1" />4
+              <h4 className="text-xl font-bold">12</h4>
+              <p className="text-xs text-slate-500">Messages</p>
             </div>
-            <div style={styles.statBox}>
-              <FaCalendarAlt style={styles.statIcon} />
-              <h4 style={styles.statNumber}>1</h4>
-              <p style={styles.statLabel}>Events</p>
+            <div className="flex flex-col items-center">
+              <FaCalendarAlt className="text-green-400 text-2xl mb-1" />
+              <h4 className="text-xl font-bold">1</h4>
+              <p className="text-xs text-slate-500">Events</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* SWIPE CARDS SECTION */}
-      <div style={styles.swipeSection}>
-        <h2 style={styles.swipeHeader}>✨ Discover New People</h2>
-        <div style={styles.swipeCardWrapper}>
+      <div className="max-w-3xl mx-auto px-4">
+        <h2 className="text-2xl font-bold mb-4 text-slate-800">✨ Discover New People</h2>
+        <div>
           <SwipeCard />
         </div>
       </div>
+
+      {/* Blocked Users Modal */}
+      <BlockedUsersModal 
+        isOpen={showBlockedUsers}
+        onClose={() => setShowBlockedUsers(false)}
+        currentUserId={profile?._id}
+      />
     </div>
   );
 }
-
-const styles = {
-  page: {
-    padding: "2rem 0",
-    fontFamily: "Inter, sans-serif",
-    background: "linear-gradient(120deg, #f0f4ff 0%, #f9fafb 100%)",
-    minHeight: "100vh",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    margin: "0 auto 2.5rem auto",
-    maxWidth: 1100,
-    padding: "0 2rem",
-  },
-  title: {
-    fontSize: "2.5rem",
-    fontWeight: "800",
-    color: "#22223b",
-    letterSpacing: "-1px",
-    textShadow: "0 2px 8px rgba(99,102,241,0.08)",
-  },
-  buttonGroup: {
-    display: "flex",
-    gap: "1rem",
-  },
-  secondaryButton: {
-    background: "linear-gradient(90deg, #6366f1 60%, #818cf8 100%)",
-    color: "#fff",
-    padding: "0.6rem 1.3rem",
-    border: "none",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "1rem",
-    boxShadow: "0 2px 8px rgba(99,102,241,0.10)",
-    transition: "background 0.2s, transform 0.2s",
-  },
-  logoutButton: {
-    background: "linear-gradient(90deg, #ef4444 60%, #f87171 100%)",
-    color: "#fff",
-    padding: "0.6rem 1.3rem",
-    border: "none",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "1rem",
-    boxShadow: "0 2px 8px rgba(239,68,68,0.10)",
-    transition: "background 0.2s, transform 0.2s",
-  },
-  profileStatsWrapper: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "2.5rem",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    margin: "0 auto 3.5rem auto",
-    maxWidth: 1100,
-    padding: "0 2rem",
-  },
-  card: {
-    backdropFilter: "blur(16px)",
-    background: "rgba(255, 255, 255, 0.85)",
-    padding: "2.5rem 2rem 2rem 2rem",
-    borderRadius: "28px",
-    textAlign: "center",
-    maxWidth: "370px",
-    minWidth: "300px",
-    boxShadow: "0 8px 32px rgba(99,102,241,0.08)",
-    position: "relative",
-    overflow: "hidden",
-  },
-  avatarWrapper: {
-    position: "relative",
-    display: "inline-block",
-    marginBottom: "1.2rem",
-  },
-  avatar: {
-    width: "120px",
-    height: "120px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "4px solid #fff",
-    boxShadow: "0 4px 16px rgba(99,102,241,0.10)",
-  },
-  badge: {
-    position: "absolute",
-    bottom: 0,
-    right: -10,
-    background: "linear-gradient(90deg, #34d399 60%, #6ee7b7 100%)",
-    color: "#fff",
-    fontWeight: 700,
-    fontSize: "0.8rem",
-    padding: "0.3rem 0.8rem",
-    borderRadius: "12px",
-    boxShadow: "0 2px 8px rgba(52,211,153,0.10)",
-    border: "2px solid #fff",
-  },
-  name: {
-    fontSize: "1.7rem",
-    fontWeight: 700,
-    marginBottom: "0.3rem",
-    color: "#22223b",
-    letterSpacing: "-0.5px",
-  },
-  bio: {
-    fontStyle: "italic",
-    color: "#6366f1",
-    marginBottom: "0.9rem",
-    fontWeight: 500,
-    fontSize: "1.05rem",
-  },
-  meta: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "0.7rem",
-    fontSize: "1rem",
-    color: "#6b7280",
-    marginBottom: "0.5rem",
-  },
-  dot: {
-    color: "#cbd5e1",
-    fontWeight: 700,
-    fontSize: "1.2rem",
-  },
-  email: {
-    marginTop: "1.1rem",
-    fontSize: "0.95rem",
-    color: "#818cf8",
-    fontWeight: 600,
-    letterSpacing: "0.2px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "0.3rem",
-  },
-  statsCard: {
-    background: "rgba(255,255,255,0.95)",
-    padding: "2.2rem 2rem 2rem 2rem",
-    borderRadius: "28px",
-    boxShadow: "0 6px 24px rgba(99,102,241,0.07)",
-    width: "320px",
-    minWidth: "260px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  statsHeader: {
-    fontSize: "1.35rem",
-    fontWeight: 700,
-    marginBottom: "1.2rem",
-    color: "#6366f1",
-    textAlign: "center",
-    letterSpacing: "-0.5px",
-  },
-  statsGrid: {
-    display: "flex",
-    justifyContent: "space-between",
-    width: "100%",
-    gap: "1rem",
-  },
-  statBox: {
-    textAlign: "center",
-    flex: 1,
-    borderRadius: "16px",
-    padding: "1.1rem 0.5rem",
-    background: "linear-gradient(120deg, #e0e7ff 0%, #f0f9ff 100%)",
-    margin: "0 0.5rem",
-    boxShadow: "0 2px 8px rgba(99,102,241,0.06)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    transition: "transform 0.15s",
-  },
-  statIcon: {
-    fontSize: "1.6rem",
-    color: "#6366f1",
-    marginBottom: "0.3rem",
-  },
-  statNumber: {
-    fontSize: "1.5rem",
-    fontWeight: 700,
-    color: "#22223b",
-    margin: 0,
-  },
-  statLabel: {
-    fontSize: "1rem",
-    color: "#6366f1",
-    fontWeight: 500,
-    margin: 0,
-  },
-  swipeSection: {
-    marginTop: "4rem",
-    paddingTop: "2.5rem",
-    borderTop: "1px solid #e2e8f0",
-    background: "rgba(255,255,255,0.7)",
-    boxShadow: "0 2px 12px rgba(99,102,241,0.04)",
-    borderRadius: "24px 24px 0 0",
-    maxWidth: 900,
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
-  swipeHeader: {
-    fontSize: "2rem",
-    fontWeight: 700,
-    color: "#6366f1",
-    textAlign: "center",
-    marginBottom: "2.2rem",
-    letterSpacing: "-0.5px",
-  },
-  swipeCardWrapper: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "320px",
-    padding: "1.5rem 0",
-  },
-  loaderContainer: {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "linear-gradient(120deg, #f0f4ff 0%, #f9fafb 100%)",
-  },
-  spinner: {
-    border: "5px solid #e0e7ff",
-    borderTop: "5px solid #6366f1",
-    borderRadius: "50%",
-    width: "48px",
-    height: "48px",
-    animation: "spin 1s linear infinite",
-  },
-  loadingText: {
-    marginTop: "1.2rem",
-    fontSize: "1.1rem",
-    color: "#6366f1",
-    fontWeight: 600,
-    letterSpacing: "0.2px",
-  },
-};
